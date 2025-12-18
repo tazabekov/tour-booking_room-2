@@ -102,7 +102,7 @@ const FilterSidebar = ({ filters, onFilterChange, minPrice, maxPrice, countries,
                 className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary"
               />
               <div className="flex items-center justify-between mt-2 text-sm text-gray-600">
-                <span>От: {filters.priceRange[0].toLocaleString('ru-RU')} ₽</span>
+                <span>От: ${filters.priceRange[0].toLocaleString('en-US')}</span>
               </div>
             </div>
 
@@ -116,7 +116,7 @@ const FilterSidebar = ({ filters, onFilterChange, minPrice, maxPrice, countries,
                 className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary"
               />
               <div className="flex items-center justify-between mt-2 text-sm text-gray-600">
-                <span>До: {filters.priceRange[1].toLocaleString('ru-RU')} ₽</span>
+                <span>До: ${filters.priceRange[1].toLocaleString('en-US')}</span>
               </div>
             </div>
 
@@ -124,7 +124,7 @@ const FilterSidebar = ({ filters, onFilterChange, minPrice, maxPrice, countries,
               <div className="flex items-center justify-between font-semibold text-gray-900">
                 <span className="text-sm">Диапазон:</span>
                 <span className="text-primary">
-                  {filters.priceRange[0].toLocaleString('ru-RU')} - {filters.priceRange[1].toLocaleString('ru-RU')} ₽
+                  ${filters.priceRange[0].toLocaleString('en-US')} - ${filters.priceRange[1].toLocaleString('en-US')}
                 </span>
               </div>
             </div>
@@ -152,7 +152,7 @@ const FilterSidebar = ({ filters, onFilterChange, minPrice, maxPrice, countries,
                   })}
                   className="text-sm px-3 py-1 bg-gray-100 text-gray-700 rounded-full hover:bg-primary hover:text-white transition-colors"
                 >
-                  До {lowThreshold.toLocaleString('ru-RU')} ₽
+                  До ${lowThreshold.toLocaleString('en-US')}
                 </button>
                 <button
                   onClick={() => onFilterChange({
@@ -161,7 +161,7 @@ const FilterSidebar = ({ filters, onFilterChange, minPrice, maxPrice, countries,
                   })}
                   className="text-sm px-3 py-1 bg-gray-100 text-gray-700 rounded-full hover:bg-primary hover:text-white transition-colors"
                 >
-                  {lowThreshold.toLocaleString('ru-RU')} - {highThreshold.toLocaleString('ru-RU')} ₽
+                  ${lowThreshold.toLocaleString('en-US')} - ${highThreshold.toLocaleString('en-US')}
                 </button>
                 <button
                   onClick={() => onFilterChange({
@@ -170,7 +170,7 @@ const FilterSidebar = ({ filters, onFilterChange, minPrice, maxPrice, countries,
                   })}
                   className="text-sm px-3 py-1 bg-gray-100 text-gray-700 rounded-full hover:bg-primary hover:text-white transition-colors"
                 >
-                  От {highThreshold.toLocaleString('ru-RU')} ₽
+                  От ${highThreshold.toLocaleString('en-US')}
                 </button>
               </>
             );
