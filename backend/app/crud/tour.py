@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional, List, Tuple
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -14,12 +15,12 @@ class TourCRUD:
         db: AsyncSession,
         skip: int = 0,
         limit: int = 10,
-        country: str | None = None,
-        min_price: float | None = None,
-        max_price: float | None = None,
-        start_date: datetime | None = None,
-        end_date: datetime | None = None,
-    ) -> tuple[list[Tour], int]:
+        country: Optional[str] = None,
+        min_price: Optional[float] = None,
+        max_price: Optional[float] = None,
+        start_date: Optional[datetime] = None,
+        end_date: Optional[datetime] = None,
+    ) -> Tuple[List[Tour], int]:
         """
         Get list of tours with optional filters.
 
@@ -54,7 +55,7 @@ class TourCRUD:
 
         return list(tours), total
 
-    async def get_tour(self, db: AsyncSession, tour_id: int) -> Tour | None:
+    async def get_tour(self, db: AsyncSession, tour_id: int) -> Optional[Tour]:
         """Get tour by ID."""
         query = select(Tour).where(Tour.id == tour_id)
         result = await db.execute(query)
@@ -108,7 +109,7 @@ class BookingCRUD:
 
         return booking
 
-    async def get_booking(self, db: AsyncSession, booking_id: int) -> Booking | None:
+    async def get_booking(self, db: AsyncSession, booking_id: int) -> Optional[Booking]:
         """Get booking by ID."""
         query = select(Booking).where(Booking.id == booking_id)
         result = await db.execute(query)
@@ -116,7 +117,7 @@ class BookingCRUD:
 
     async def get_bookings_by_email(
         self, db: AsyncSession, email: str
-    ) -> list[Booking]:
+    ) -> List[Booking]:
         """Get all bookings by customer email."""
         query = (
             select(Booking)

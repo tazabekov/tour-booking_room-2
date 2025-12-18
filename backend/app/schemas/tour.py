@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional, List
 from pydantic import BaseModel, EmailStr, Field, ConfigDict
 
 
@@ -13,7 +14,7 @@ class TourBase(BaseModel):
     price: float = Field(..., gt=0)
     duration_days: int = Field(..., gt=0)
     max_people: int = Field(..., gt=0)
-    image_url: str | None = None
+    image_url: Optional[str] = None
     start_date: datetime
     end_date: datetime
     available_slots: int = Field(..., ge=0)
@@ -38,7 +39,7 @@ class TourResponse(TourBase):
 class TourListResponse(BaseModel):
     """Schema for list of tours with pagination."""
 
-    tours: list[TourResponse]
+    tours: List[TourResponse]
     total: int
     page: int
     page_size: int
@@ -53,7 +54,7 @@ class BookingBase(BaseModel):
     customer_email: EmailStr
     customer_phone: str = Field(..., min_length=1, max_length=20)
     number_of_people: int = Field(..., gt=0)
-    notes: str | None = None
+    notes: Optional[str] = None
 
 
 class BookingCreate(BookingBase):

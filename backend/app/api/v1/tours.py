@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 import math
@@ -14,11 +15,11 @@ router = APIRouter()
 async def get_tours(
     page: int = Query(1, ge=1, description="Page number"),
     page_size: int = Query(10, ge=1, le=100, description="Items per page"),
-    country: str | None = Query(None, description="Filter by country"),
-    min_price: float | None = Query(None, ge=0, description="Minimum price"),
-    max_price: float | None = Query(None, ge=0, description="Maximum price"),
-    start_date: datetime | None = Query(None, description="Filter by start date (ISO format)"),
-    end_date: datetime | None = Query(None, description="Filter by end date (ISO format)"),
+    country: Optional[str] = Query(None, description="Filter by country"),
+    min_price: Optional[float] = Query(None, ge=0, description="Minimum price"),
+    max_price: Optional[float] = Query(None, ge=0, description="Maximum price"),
+    start_date: Optional[datetime] = Query(None, description="Filter by start date (ISO format)"),
+    end_date: Optional[datetime] = Query(None, description="Filter by end date (ISO format)"),
     db: AsyncSession = Depends(get_db),
 ):
     """

@@ -1,3 +1,4 @@
+from typing import List
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -41,7 +42,7 @@ async def get_booking(
     return booking
 
 
-@router.get("/", response_model=list[BookingResponse])
+@router.get("/", response_model=List[BookingResponse])
 async def get_bookings_by_email(
     email: str = Query(..., description="Customer email address"),
     db: AsyncSession = Depends(get_db),
