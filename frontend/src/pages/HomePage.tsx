@@ -1,32 +1,47 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import SearchBar from '../components/SearchBar';
 import TourCard from '../components/TourCard';
-import { tours } from '../data/tours';
+import { api } from '../api/client';
+import type { Tour } from '../types';
+
+const destinations = [
+  {
+    name: 'Турция',
+    image: 'https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?w=800&q=80',
+  },
+  {
+    name: 'Франция',
+    image: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=800&q=80',
+  },
+  {
+    name: 'ОАЭ',
+    image: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=800&q=80',
+  },
+  {
+    name: 'Италия',
+    image: 'https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=800&q=80',
+  },
+];
 
 const HomePage = () => {
-  const featuredTours = tours.slice(0, 6);
-  const destinations = [
-    {
-      name: 'Турция',
-      image: 'https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?w=800&q=80',
-      tours: tours.filter(t => t.country === 'Турция').length,
-    },
-    {
-      name: 'Египет',
-      image: 'https://images.unsplash.com/photo-1572252009286-268acec5ca0a?w=800&q=80',
-      tours: tours.filter(t => t.country === 'Египет').length,
-    },
-    {
-      name: 'ОАЭ',
-      image: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=800&q=80',
-      tours: tours.filter(t => t.country === 'ОАЭ').length,
-    },
-    {
-      name: 'Таиланд',
-      image: 'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=800&q=80',
-      tours: tours.filter(t => t.country === 'Таиланд').length,
-    },
-  ];
+  const [featuredTours, setFeaturedTours] = useState<Tour[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTours = async () => {
+      try {
+        const response = await api.getTours({ page_size: 6 });
+        setFeaturedTours(response.tours);
+      } catch (err) {
+        console.error('Failed to fetch tours:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTours();
+  }, []);
 
   return (
     <div>
@@ -80,11 +95,21 @@ const HomePage = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-          {featuredTours.map((tour) => (
-            <TourCard key={tour.id} tour={tour} />
-          ))}
-        </div>
+        {loading ? (
+          <div className="flex items-center justify-center py-16">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          </div>
+        ) : featuredTours.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+            {featuredTours.map((tour) => (
+              <TourCard key={tour.id} tour={tour} />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-16 text-gray-500">
+            Туры временно недоступны
+          </div>
+        )}
 
         <div className="text-center">
           <Link
@@ -136,7 +161,7 @@ const HomePage = () => {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
                 <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
                   <h3 className="text-2xl font-bold mb-2">{destination.name}</h3>
-                  <p className="text-white/90">{destination.tours} туров</p>
+                  <p className="text-white/90">Смотреть туры</p>
                 </div>
               </Link>
             ))}

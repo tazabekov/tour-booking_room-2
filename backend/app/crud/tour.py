@@ -9,6 +9,36 @@ from app.schemas.tour import TourCreate, BookingCreate
 class TourCRUD:
     """CRUD operations for Tour model."""
 
+    async def get_filter_options(
+        self, db: AsyncSession
+    ) -> dict:
+        """
+        Get filter options based on available tours data.
+
+        Returns dict with countries list and price range.
+        """
+        # Get distinct countries
+        countries_query = select(Tour.country).distinct().order_by(Tour.country)
+        result = await db.execute(countries_query)
+        countries = [row[0] for row in result.fetchall()]
+
+        # Get min and max prices
+        price_query = select(
+            func.min(Tour.price).label("min_price"),
+            func.max(Tour.price).label("max_price")
+        )
+        result = await db.execute(price_query)
+        price_row = result.fetchone()
+
+        min_price = float(price_row[0]) if price_row[0] is not None else 0
+        max_price = float(price_row[1]) if price_row[1] is not None else 0
+
+        return {
+            "countries": countries,
+            "min_price": min_price,
+            "max_price": max_price,
+        }
+
     async def get_tours(
         self,
         db: AsyncSession,

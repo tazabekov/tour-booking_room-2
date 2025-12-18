@@ -5,10 +5,12 @@ interface FilterSidebarProps {
   onFilterChange: (filters: FilterState) => void;
   minPrice: number;
   maxPrice: number;
+  countries: string[];
+  isLoading?: boolean;
 }
 
-const FilterSidebar = ({ filters, onFilterChange, minPrice, maxPrice }: FilterSidebarProps) => {
-  const countries = ['Все страны', 'Турция', 'Египет', 'ОАЭ', 'Таиланд', 'Мальдивы', 'Италия'];
+const FilterSidebar = ({ filters, onFilterChange, minPrice, maxPrice, countries, isLoading }: FilterSidebarProps) => {
+  const countryOptions = ['Все страны', ...countries];
 
   const handleCountryChange = (country: string) => {
     onFilterChange({
@@ -52,28 +54,36 @@ const FilterSidebar = ({ filters, onFilterChange, minPrice, maxPrice }: FilterSi
           <label className="block text-sm font-semibold text-gray-900 mb-3">
             Страна
           </label>
-          <div className="space-y-2">
-            {countries.map((country) => (
-              <label
-                key={country}
-                className="flex items-center space-x-3 cursor-pointer group"
-              >
-                <input
-                  type="radio"
-                  name="country"
-                  checked={
-                    (country === 'Все страны' && filters.country === '') ||
-                    filters.country === country
-                  }
-                  onChange={() => handleCountryChange(country)}
-                  className="w-4 h-4 text-primary focus:ring-primary"
-                />
-                <span className="text-gray-700 group-hover:text-primary transition-colors">
-                  {country}
-                </span>
-              </label>
-            ))}
-          </div>
+          {isLoading ? (
+            <div className="space-y-2">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="h-6 bg-gray-200 rounded animate-pulse" />
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {countryOptions.map((country) => (
+                <label
+                  key={country}
+                  className="flex items-center space-x-3 cursor-pointer group"
+                >
+                  <input
+                    type="radio"
+                    name="country"
+                    checked={
+                      (country === 'Все страны' && filters.country === '') ||
+                      filters.country === country
+                    }
+                    onChange={() => handleCountryChange(country)}
+                    className="w-4 h-4 text-primary focus:ring-primary"
+                  />
+                  <span className="text-gray-700 group-hover:text-primary transition-colors">
+                    {country}
+                  </span>
+                </label>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Price Range Filter */}
@@ -128,27 +138,43 @@ const FilterSidebar = ({ filters, onFilterChange, minPrice, maxPrice }: FilterSi
           Быстрые фильтры
         </label>
         <div className="flex flex-wrap gap-2">
-          <button
-            onClick={() => handlePriceChange(1, 70000)}
-            className="text-sm px-3 py-1 bg-gray-100 text-gray-700 rounded-full hover:bg-primary hover:text-white transition-colors"
-          >
-            До 70 000 ₽
-          </button>
-          <button
-            onClick={() => onFilterChange({
-              ...filters,
-              priceRange: [70000, 150000],
-            })}
-            className="text-sm px-3 py-1 bg-gray-100 text-gray-700 rounded-full hover:bg-primary hover:text-white transition-colors"
-          >
-            70 000 - 150 000 ₽
-          </button>
-          <button
-            onClick={() => handlePriceChange(0, 150000)}
-            className="text-sm px-3 py-1 bg-gray-100 text-gray-700 rounded-full hover:bg-primary hover:text-white transition-colors"
-          >
-            От 150 000 ₽
-          </button>
+          {(() => {
+            const range = maxPrice - minPrice;
+            const lowThreshold = Math.round(minPrice + range * 0.33);
+            const highThreshold = Math.round(minPrice + range * 0.66);
+
+            return (
+              <>
+                <button
+                  onClick={() => onFilterChange({
+                    ...filters,
+                    priceRange: [minPrice, lowThreshold],
+                  })}
+                  className="text-sm px-3 py-1 bg-gray-100 text-gray-700 rounded-full hover:bg-primary hover:text-white transition-colors"
+                >
+                  До {lowThreshold.toLocaleString('ru-RU')} ₽
+                </button>
+                <button
+                  onClick={() => onFilterChange({
+                    ...filters,
+                    priceRange: [lowThreshold, highThreshold],
+                  })}
+                  className="text-sm px-3 py-1 bg-gray-100 text-gray-700 rounded-full hover:bg-primary hover:text-white transition-colors"
+                >
+                  {lowThreshold.toLocaleString('ru-RU')} - {highThreshold.toLocaleString('ru-RU')} ₽
+                </button>
+                <button
+                  onClick={() => onFilterChange({
+                    ...filters,
+                    priceRange: [highThreshold, maxPrice],
+                  })}
+                  className="text-sm px-3 py-1 bg-gray-100 text-gray-700 rounded-full hover:bg-primary hover:text-white transition-colors"
+                >
+                  От {highThreshold.toLocaleString('ru-RU')} ₽
+                </button>
+              </>
+            );
+          })()}
         </div>
       </div>
     </div>

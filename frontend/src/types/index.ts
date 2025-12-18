@@ -1,23 +1,27 @@
+// API Tour model from backend
 export interface Tour {
-  id: string;
+  id: number;
   title: string;
-  description: string;
   country: string;
   city: string;
+  description: string;
   price: number;
-  duration: number;
-  rating: number;
-  images: string[];
-  itinerary: ItineraryItem[];
-  included: string[];
-  excluded: string[];
-  highlights: string[];
+  duration_days: number;
+  max_people: number;
+  available_slots: number;
+  image_url: string;
+  start_date: string;
+  end_date: string;
+  created_at: string;
+  updated_at: string;
 }
 
-export interface ItineraryItem {
-  day: number;
-  title: string;
-  description: string;
+export interface ToursResponse {
+  tours: Tour[];
+  total: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
 }
 
 export interface BookingFormData {
@@ -25,7 +29,30 @@ export interface BookingFormData {
   email: string;
   phone: string;
   travelers: number;
-  date: string;
+  notes?: string;
+}
+
+export interface CreateBookingRequest {
+  tour_id: number;
+  customer_name: string;
+  customer_email: string;
+  customer_phone: string;
+  number_of_people: number;
+  notes?: string;
+}
+
+export interface Booking {
+  id: number;
+  tour_id: number;
+  customer_name: string;
+  customer_email: string;
+  customer_phone: string;
+  number_of_people: number;
+  total_price: number;
+  booking_date: string;
+  status: 'confirmed' | 'cancelled';
+  notes: string | null;
+  created_at: string;
 }
 
 export interface FilterState {
