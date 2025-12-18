@@ -132,6 +132,17 @@ python main.py
   - Технические детали и принципы работы
   - Инструкции по модификации и расширению
 
+### Коммит 8:
+**Название:** `fix: исправлена совместимость типов для Python 3.9 (Optional вместо |), добавлен greenlet и email-validator`
+- **Время коммита:** 2025-12-18 20:47:20
+- **Время пуша:** 2025-12-18 20:47:20
+
+**Что исправлено:**
+- Заменен синтаксис Python 3.10+ (`str | None`, `list[...]`) на совместимый с Python 3.9 (`Optional[str]`, `List[...]`)
+- Добавлена зависимость `greenlet` для SQLAlchemy async
+- Добавлена зависимость `email-validator` для Pydantic EmailStr
+- Исправлены файлы: `app/schemas/tour.py`, `app/crud/tour.py`, `app/config.py`, `app/api/v1/tours.py`, `app/api/v1/bookings.py`
+
 ---
 
 ## 2025-12-18 10:04 - Frontend Agent: Инициализация фронтенда
