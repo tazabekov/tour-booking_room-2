@@ -35,6 +35,12 @@ export interface ToursFilters {
   end_date?: string;
 }
 
+export interface FilterOptions {
+  countries: string[];
+  min_price: number;
+  max_price: number;
+}
+
 export interface CreateBookingRequest {
   tour_id: number;
   customer_name: string;
@@ -97,6 +103,10 @@ class ApiClient {
     const endpoint = `/tours/${queryString ? `?${queryString}` : ''}`;
 
     return this.request<ToursResponse>(endpoint);
+  }
+
+  async getFilterOptions(): Promise<FilterOptions> {
+    return this.request<FilterOptions>('/tours/filters');
   }
 
   async getTourById(id: number): Promise<ApiTour> {

@@ -267,3 +267,75 @@ npm run dev
 ```
 
 ---
+
+## 2025-12-18 - Backend/Frontend Agent: Динамические фильтры из API
+
+### Что сделано:
+Фильтры на странице `/tours` теперь загружаются динамически из базы данных вместо хардкода.
+
+### Backend изменения:
+
+**1. Новый CRUD метод (`app/crud/tour.py`):**
+```python
+async def get_filter_options(self, db: AsyncSession) -> dict:
+    """Получает опции фильтров из БД"""
+    # Distinct страны
+    # Min/Max цены
+```
+
+**2. Новая схема (`app/schemas/tour.py`):**
+```python
+class FilterOptionsResponse(BaseModel):
+    countries: list[str]
+    min_price: float
+    max_price: float
+```
+
+**3. Новый endpoint (`app/api/v1/tours.py`):**
+```
+GET /api/v1/tours/filters
+```
+
+**Пример ответа:**
+```json
+{
+    "countries": ["Австрия", "Великобритания", "Греция", ...],
+    "min_price": 420.0,
+    "max_price": 1200.0
+}
+```
+
+### Frontend изменения:
+
+**1. API клиент (`src/api/client.ts`):**
+```typescript
+interface FilterOptions {
+  countries: string[];
+  min_price: number;
+  max_price: number;
+}
+
+async getFilterOptions(): Promise<FilterOptions>
+```
+
+**2. FilterSidebar (`src/components/FilterSidebar.tsx`):**
+- Новые props: `countries: string[]`, `isLoading?: boolean`
+- Страны загружаются динамически из API
+- Быстрые фильтры рассчитываются как 33%/66% от реального диапазона цен
+- Skeleton loading при загрузке опций
+
+**3. ToursPage (`src/pages/ToursPage.tsx`):**
+- Загрузка filter options при монтировании
+- Передача динамических данных в FilterSidebar
+- Price range обновляется на основе реальных данных БД
+
+### API эндпоинты (обновлено):
+
+| Frontend метод | Backend endpoint | Описание |
+|----------------|------------------|----------|
+| `api.getTours()` | `GET /api/v1/tours/` | Список туров с фильтрами |
+| `api.getTourById(id)` | `GET /api/v1/tours/{id}` | Детали тура |
+| `api.getFilterOptions()` | `GET /api/v1/tours/filters` | **NEW** Опции фильтров |
+| `api.createBooking()` | `POST /api/v1/bookings/` | Создание брони |
+
+---

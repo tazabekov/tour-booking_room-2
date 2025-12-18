@@ -2,11 +2,11 @@ import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import TourCard from '../components/TourCard';
 import FilterSidebar from '../components/FilterSidebar';
-import { api } from '../api/client';
+import { api, type FilterOptions } from '../api/client';
 import type { Tour, FilterState } from '../types';
 
 const DEFAULT_MIN_PRICE = 0;
-const DEFAULT_MAX_PRICE = 5000;
+const DEFAULT_MAX_PRICE = 500000;
 
 const ToursPage = () => {
   const [searchParams] = useSearchParams();
@@ -16,6 +16,13 @@ const ToursPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [total, setTotal] = useState(0);
+
+  const [filterOptions, setFilterOptions] = useState<FilterOptions>({
+    countries: [],
+    min_price: DEFAULT_MIN_PRICE,
+    max_price: DEFAULT_MAX_PRICE,
+  });
+  const [filterOptionsLoading, setFilterOptionsLoading] = useState(true);
 
   const [filters, setFilters] = useState<FilterState>({
     country: '',
@@ -30,8 +37,8 @@ const ToursPage = () => {
     try {
       const response = await api.getTours({
         country: filters.country || undefined,
-        min_price: filters.priceRange[0] > DEFAULT_MIN_PRICE ? filters.priceRange[0] : undefined,
-        max_price: filters.priceRange[1] < DEFAULT_MAX_PRICE ? filters.priceRange[1] : undefined,
+        min_price: filters.priceRange[0] > filterOptions.min_price ? filters.priceRange[0] : undefined,
+        max_price: filters.priceRange[1] < filterOptions.max_price ? filters.priceRange[1] : undefined,
         page_size: 50,
       });
 
@@ -57,7 +64,25 @@ const ToursPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [filters]);
+  }, [filters, filterOptions]);
+
+  useEffect(() => {
+    const fetchFilterOptions = async () => {
+      try {
+        const options = await api.getFilterOptions();
+        setFilterOptions(options);
+        setFilters((prev) => ({
+          ...prev,
+          priceRange: [options.min_price, options.max_price],
+        }));
+      } catch (err) {
+        console.error('Failed to fetch filter options:', err);
+      } finally {
+        setFilterOptionsLoading(false);
+      }
+    };
+    fetchFilterOptions();
+  }, []);
 
   useEffect(() => {
     fetchTours();
@@ -73,7 +98,7 @@ const ToursPage = () => {
   const handleResetFilters = () => {
     setFilters({
       country: '',
-      priceRange: [DEFAULT_MIN_PRICE, DEFAULT_MAX_PRICE],
+      priceRange: [filterOptions.min_price, filterOptions.max_price],
       searchQuery: '',
     });
   };
@@ -111,8 +136,10 @@ const ToursPage = () => {
             <FilterSidebar
               filters={filters}
               onFilterChange={setFilters}
-              minPrice={DEFAULT_MIN_PRICE}
-              maxPrice={DEFAULT_MAX_PRICE}
+              minPrice={filterOptions.min_price}
+              maxPrice={filterOptions.max_price}
+              countries={filterOptions.countries}
+              isLoading={filterOptionsLoading}
             />
           </aside>
 
