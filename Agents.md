@@ -143,6 +143,33 @@ python main.py
 - Добавлена зависимость `email-validator` для Pydantic EmailStr
 - Исправлены файлы: `app/schemas/tour.py`, `app/crud/tour.py`, `app/config.py`, `app/api/v1/tours.py`, `app/api/v1/bookings.py`
 
+### Коммит 9:
+**Название:** `feat: добавлен UI чата (ChatWidget) и API endpoint для интеграции с чатботом`
+- **Время коммита:** 2025-12-18 20:48:16
+- **Время пуша:** 2025-12-18 20:48:16
+
+**Что добавлено:**
+- **Backend**: Создан API endpoint `/api/v1/chat/` для обработки сообщений через AI чат-бота
+  - `POST /api/v1/chat/` - обработка сообщений пользователя
+  - `POST /api/v1/chat/clear` - очистка истории разговора
+  - Интеграция с MainAgent из chatbot для использования tools
+  - Поддержка сессий для сохранения контекста разговора
+  
+- **Frontend**: Создан компонент `ChatWidget.tsx`
+  - Плавающее окно чата с кнопкой в правом нижнем углу
+  - Отображение истории сообщений (user/assistant)
+  - Индикатор загрузки при обработке запроса
+  - Адаптивный дизайн с использованием Tailwind CSS
+  - Интеграция с backend API через fetch
+  
+- **Интеграция**: ChatWidget добавлен в `App.tsx` для отображения на всех страницах
+
+**Файлы:**
+- `backend/app/api/v1/chat.py` - новый API endpoint
+- `backend/app/api/v1/__init__.py` - добавлен роутер для chat
+- `frontend/src/components/ChatWidget.tsx` - новый компонент чата
+- `frontend/src/App.tsx` - интеграция ChatWidget
+
 ---
 
 ## 2025-12-18 10:04 - Frontend Agent: Инициализация фронтенда
