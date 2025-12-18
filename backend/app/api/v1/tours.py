@@ -6,7 +6,7 @@ import math
 
 from app.database import get_db
 from app.crud import tour_crud
-from app.schemas.tour import TourResponse, TourListResponse
+from app.schemas.tour import TourResponse, TourListResponse, FilterOptionsResponse
 
 router = APIRouter()
 
@@ -52,6 +52,22 @@ async def get_tours(
         page_size=page_size,
         total_pages=total_pages,
     )
+
+
+@router.get("/filters", response_model=FilterOptionsResponse)
+async def get_filter_options(
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Get available filter options based on existing tours data.
+
+    Returns:
+    - countries: List of distinct countries from all tours
+    - min_price: Minimum price across all tours
+    - max_price: Maximum price across all tours
+    """
+    options = await tour_crud.get_filter_options(db=db)
+    return FilterOptionsResponse(**options)
 
 
 @router.get("/{tour_id}", response_model=TourResponse)

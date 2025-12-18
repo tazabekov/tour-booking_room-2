@@ -46,6 +46,14 @@ class TourListResponse(BaseModel):
     total_pages: int
 
 
+class FilterOptionsResponse(BaseModel):
+    """Schema for filter options response."""
+
+    countries: list[str]
+    min_price: float
+    max_price: float
+
+
 # Booking Schemas
 class BookingBase(BaseModel):
     """Base Booking schema."""
