@@ -2,13 +2,24 @@
 
 from langchain.tools import StructuredTool
 from typing import Optional
-from .backend_tools import (
-    get_tours,
-    get_tour_details,
-    create_booking,
-    get_booking_details,
-    get_user_bookings
-)
+try:
+    # Попытка относительного импорта (когда запускается как модуль)
+    from .backend_tools import (
+        get_tours,
+        get_tour_details,
+        create_booking,
+        get_booking_details,
+        get_user_bookings
+    )
+except ImportError:
+    # Абсолютный импорт (когда импортируется из бэкенда)
+    from backend_tools import (
+        get_tours,
+        get_tour_details,
+        create_booking,
+        get_booking_details,
+        get_user_bookings
+    )
 
 
 def create_tools():

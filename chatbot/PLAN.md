@@ -57,3 +57,4 @@ chatbot/
 - Память сохраняется в ConversationBufferMemory (в памяти процесса)
 - Для production можно добавить Redis для распределенной памяти
 
+

@@ -32,3 +32,4 @@ class ConversationMemory:
         memory = self.get_memory(session_id)
         return memory.chat_memory.messages
 
+
