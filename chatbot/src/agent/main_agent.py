@@ -7,9 +7,16 @@ from typing import Dict, Any, List
 import os
 from dotenv import load_dotenv
 
-from ..prompts.system_prompts import SYSTEM_PROMPT
-from ..tools.tool_registry import create_tools
-from ..memory.conversation_memory import ConversationMemory
+try:
+    # Попытка относительного импорта (когда запускается как модуль)
+    from ..prompts.system_prompts import SYSTEM_PROMPT
+    from ..tools.tool_registry import create_tools
+    from ..memory.conversation_memory import ConversationMemory
+except ImportError:
+    # Абсолютный импорт (когда импортируется из бэкенда)
+    from prompts.system_prompts import SYSTEM_PROMPT
+    from tools.tool_registry import create_tools
+    from memory.conversation_memory import ConversationMemory
 
 load_dotenv()
 
@@ -80,7 +87,8 @@ class MainAgent:
             
             # Сохраняем в память
             memory.chat_memory.add_user_message(query)
-            memory.chat_memory.add_ai_message(result.get("output", ""))
+            output_text = result.get("output", "")
+            memory.chat_memory.add_ai_message(output_text)
             
             return result
         except Exception as e:

@@ -25,7 +25,7 @@ def get_tours(
     end_date: Optional[str] = None,
     page: int = 1,
     page_size: int = 10
-) -> Dict[str, Any]:
+) -> str:
     """
     Получить список туров из бэкенда с фильтрацией.
     
@@ -39,7 +39,7 @@ def get_tours(
         page_size: Размер страницы (по умолчанию: 10)
     
     Returns:
-        Словарь с данными о турах и пагинацией
+        Форматированная строка с информацией о турах
     """
     try:
         params = {
@@ -80,16 +80,31 @@ def get_tours(
             f"{API_BASE}/tours/",
             params=params,
             headers=get_headers(),
-            timeout=10
+            timeout=30
         )
         response.raise_for_status()
         data = response.json()
-        return {"success": True, "data": data}
+        
+        # Форматируем данные в читаемую строку для LLM
+        tours = data.get("tours", [])
+        if not tours:
+            result_str = "Туры не найдены по заданным критериям."
+        else:
+            tours_list = []
+            for tour in tours:
+                tour_info = f"ID: {tour.get('id')}, Название: {tour.get('title')}, Страна: {tour.get('country')}, Город: {tour.get('city')}, Цена: ${tour.get('price')}, Длительность: {tour.get('duration_days')} дней"
+                tours_list.append(tour_info)
+            result_str = f"Найдено туров: {len(tours_list)}\n\n" + "\n".join(tours_list)
+            if data.get("total_pages", 1) > 1:
+                result_str += f"\n\nВсего страниц: {data.get('total_pages')}, Текущая страница: {data.get('page')}"
+        
+        return result_str
     except requests.exceptions.RequestException as e:
-        return {"success": False, "error": str(e), "message": f"Не удалось получить туры: {str(e)}"}
+        error_msg = f"Ошибка при получении туров: {str(e)}"
+        return error_msg
 
 
-def get_tour_details(tour_id: int) -> Dict[str, Any]:
+def get_tour_details(tour_id: int) -> str:
     """
     Получить детальную информацию о туре по ID.
     
@@ -97,22 +112,38 @@ def get_tour_details(tour_id: int) -> Dict[str, Any]:
         tour_id: ID тура
     
     Returns:
-        Детальная информация о туре
+        Форматированная строка с детальной информацией о туре
     """
     try:
         response = requests.get(
             f"{API_BASE}/tours/{tour_id}",
             headers=get_headers(),
-            timeout=10
+            timeout=30
         )
         response.raise_for_status()
-        return {"success": True, "data": response.json()}
+        tour = response.json()
+        
+        # Форматируем данные в читаемую строку для LLM
+        result_str = f"""Детали тура:
+ID: {tour.get('id')}
+Название: {tour.get('title')}
+Страна: {tour.get('country')}
+Город: {tour.get('city')}
+Цена: ${tour.get('price')}
+Длительность: {tour.get('duration_days')} дней
+Максимум человек: {tour.get('max_people')}
+Доступных мест: {tour.get('available_slots')}
+Дата начала: {tour.get('start_date')}
+Дата окончания: {tour.get('end_date')}
+Описание: {tour.get('description', 'Нет описания')}"""
+        
+        return result_str
     except requests.exceptions.HTTPError as e:
         if e.response.status_code == 404:
-            return {"success": False, "error": "Tour not found", "message": f"Тур с ID {tour_id} не найден"}
-        return {"success": False, "error": str(e), "message": f"Ошибка при получении тура: {str(e)}"}
+            return f"Тур с ID {tour_id} не найден"
+        return f"Ошибка при получении тура: {str(e)}"
     except requests.exceptions.RequestException as e:
-        return {"success": False, "error": str(e), "message": f"Не удалось получить информацию о туре: {str(e)}"}
+        return f"Не удалось получить информацию о туре: {str(e)}"
 
 
 def create_booking(
@@ -122,7 +153,7 @@ def create_booking(
     customer_phone: str,
     number_of_people: int,
     notes: Optional[str] = None
-) -> Dict[str, Any]:
+) -> str:
     """
     Создать бронирование тура.
     
@@ -135,7 +166,7 @@ def create_booking(
         notes: Дополнительные заметки (опционально)
     
     Returns:
-        Результат бронирования
+        Форматированная строка с результатом бронирования
     """
     try:
         payload = {
@@ -153,20 +184,34 @@ def create_booking(
             f"{API_BASE}/bookings/",
             json=payload,
             headers=get_headers(),
-            timeout=10
+            timeout=30
         )
         response.raise_for_status()
-        return {"success": True, "data": response.json()}
+        booking = response.json()
+        
+        # Форматируем данные в читаемую строку для LLM
+        result_str = f"""Бронирование успешно создано!
+ID бронирования: {booking.get('id')}
+Тур ID: {booking.get('tour_id')}
+Клиент: {booking.get('customer_name')}
+Email: {booking.get('customer_email')}
+Телефон: {booking.get('customer_phone')}
+Количество человек: {booking.get('number_of_people')}
+Общая стоимость: ${booking.get('total_price')}
+Дата бронирования: {booking.get('booking_date')}
+Статус: {booking.get('status')}"""
+        
+        return result_str
     except requests.exceptions.HTTPError as e:
         if e.response.status_code == 400:
             error_detail = e.response.json().get("detail", str(e))
-            return {"success": False, "error": error_detail, "message": f"Ошибка бронирования: {error_detail}"}
-        return {"success": False, "error": str(e), "message": f"Ошибка при создании бронирования: {str(e)}"}
+            return f"Ошибка бронирования: {error_detail}"
+        return f"Ошибка при создании бронирования: {str(e)}"
     except requests.exceptions.RequestException as e:
-        return {"success": False, "error": str(e), "message": f"Не удалось создать бронирование: {str(e)}"}
+        return f"Не удалось создать бронирование: {str(e)}"
 
 
-def get_booking_details(booking_id: int) -> Dict[str, Any]:
+def get_booking_details(booking_id: int) -> str:
     """
     Получить детали бронирования по ID.
     
@@ -174,25 +219,40 @@ def get_booking_details(booking_id: int) -> Dict[str, Any]:
         booking_id: ID бронирования
     
     Returns:
-        Детали бронирования
+        Форматированная строка с деталями бронирования
     """
     try:
         response = requests.get(
             f"{API_BASE}/bookings/{booking_id}",
             headers=get_headers(),
-            timeout=10
+            timeout=30
         )
         response.raise_for_status()
-        return {"success": True, "data": response.json()}
+        booking = response.json()
+        
+        # Форматируем данные в читаемую строку для LLM
+        result_str = f"""Детали бронирования:
+ID: {booking.get('id')}
+Тур ID: {booking.get('tour_id')}
+Клиент: {booking.get('customer_name')}
+Email: {booking.get('customer_email')}
+Телефон: {booking.get('customer_phone')}
+Количество человек: {booking.get('number_of_people')}
+Общая стоимость: ${booking.get('total_price')}
+Дата бронирования: {booking.get('booking_date')}
+Статус: {booking.get('status')}
+Заметки: {booking.get('notes', 'Нет заметок')}"""
+        
+        return result_str
     except requests.exceptions.HTTPError as e:
         if e.response.status_code == 404:
-            return {"success": False, "error": "Booking not found", "message": f"Бронирование с ID {booking_id} не найдено"}
-        return {"success": False, "error": str(e), "message": f"Ошибка при получении бронирования: {str(e)}"}
+            return f"Бронирование с ID {booking_id} не найдено"
+        return f"Ошибка при получении бронирования: {str(e)}"
     except requests.exceptions.RequestException as e:
-        return {"success": False, "error": str(e), "message": f"Не удалось получить информацию о бронировании: {str(e)}"}
+        return f"Не удалось получить информацию о бронировании: {str(e)}"
 
 
-def get_user_bookings(email: str) -> Dict[str, Any]:
+def get_user_bookings(email: str) -> str:
     """
     Получить все бронирования пользователя по email.
     
@@ -200,17 +260,29 @@ def get_user_bookings(email: str) -> Dict[str, Any]:
         email: Email пользователя
     
     Returns:
-        Список бронирований пользователя
+        Форматированная строка со списком бронирований пользователя
     """
     try:
         response = requests.get(
             f"{API_BASE}/bookings/",
             params={"email": email},
             headers=get_headers(),
-            timeout=10
+            timeout=30
         )
         response.raise_for_status()
-        return {"success": True, "data": response.json()}
+        bookings = response.json()
+        
+        # Форматируем данные в читаемую строку для LLM
+        if not bookings:
+            return f"Бронирования для email {email} не найдены."
+        
+        bookings_list = []
+        for booking in bookings:
+            booking_info = f"ID: {booking.get('id')}, Тур ID: {booking.get('tour_id')}, Клиент: {booking.get('customer_name')}, Количество человек: {booking.get('number_of_people')}, Стоимость: ${booking.get('total_price')}, Статус: {booking.get('status')}, Дата: {booking.get('booking_date')}"
+            bookings_list.append(booking_info)
+        
+        result_str = f"Найдено бронирований: {len(bookings_list)}\n\n" + "\n".join(bookings_list)
+        return result_str
     except requests.exceptions.RequestException as e:
-        return {"success": False, "error": str(e), "message": f"Не удалось получить бронирования: {str(e)}"}
+        return f"Не удалось получить бронирования: {str(e)}"
 

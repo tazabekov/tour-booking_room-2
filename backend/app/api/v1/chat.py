@@ -6,6 +6,7 @@ from typing import Optional
 import sys
 import os
 from dotenv import load_dotenv
+import asyncio
 
 # Добавляем путь к chatbot в sys.path
 # Путь от backend/app/api/v1/chat.py к корню проекта, затем к chatbot
@@ -25,16 +26,27 @@ router = APIRouter()
 
 # Глобальный экземпляр агента (инициализируется при первом запросе)
 _agent_instance = None
+_agent_module_loaded = False
 
 
 def get_agent():
     """Получить экземпляр агента (lazy initialization)"""
-    global _agent_instance
-    if _agent_instance is None:
+    global _agent_instance, _agent_module_loaded
+    if _agent_instance is None or not _agent_module_loaded:
         try:
             # Импортируем из chatbot/src/agent/main_agent.py
+            import importlib
+            import sys
+            
+            # Принудительно перезагружаем модули для обновления кода
+            modules_to_reload = ['agent.main_agent', 'tools.backend_tools', 'tools.tool_registry']
+            for module_name in modules_to_reload:
+                if module_name in sys.modules:
+                    importlib.reload(sys.modules[module_name])
+            
             from agent.main_agent import MainAgent
             _agent_instance = MainAgent()
+            _agent_module_loaded = True
         except Exception as e:
             import traceback
             error_details = traceback.format_exc()
@@ -66,10 +78,12 @@ async def chat(request: ChatRequest):
     """
     try:
         agent = get_agent()
-        result = agent.process(request.message, request.session_id or "default")
+        # Запускаем синхронный код агента в отдельном потоке, чтобы избежать блокировки
+        result = await asyncio.to_thread(agent.process, request.message, request.session_id or "default")
         
+        response_text = result.get("output", "Не удалось получить ответ")
         return ChatResponse(
-            response=result.get("output", "Не удалось получить ответ"),
+            response=response_text,
             session_id=request.session_id or "default"
         )
     except Exception as e:
